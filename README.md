@@ -1,5 +1,5 @@
 # WifeAlert
-A customizable Twitch live notification tool with advanced features for Windows.
+A customizable Twitch notification tool.
 
 <img src="assets/screenshot.png" alt="WifeAlert Logo" width="200"/>
 
