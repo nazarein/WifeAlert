@@ -94,20 +94,6 @@ For each streamer, you can configure:
 - **Start With Windows**: Launch automatically on system startup
 - **Prevent Opening**: Temporarily disable auto-opening streams
 
-## FAQ
-
-**Q: How do I get a chat OAuth token?**  
-A: Visit [Twitch Token Generator](https://twitchtokengenerator.com) and generate a Chat Bot token.
-
-**Q: Why isn't auto-open working?**  
-A: Check if "Prevent Opening" is enabled in the main window.
-
-**Q: Can I use this on other operating systems?**  
-A: Currently, WifeAlert is designed for Windows only.
-
-**Q: Where are my settings stored?**  
-A: Settings are stored in `%APPDATA%\WifeAlert\`
-
 ## Security
 
 WifeAlert takes security seriously:
