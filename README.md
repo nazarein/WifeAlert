@@ -2,6 +2,7 @@
 <div align="center">
   <img src="assets/icon.png" alt="WifeAlert Logo" width="200"/>
 A customizable Twitch live notification tool with advanced features for Windows.
+</div>
 
 ## Features
 
