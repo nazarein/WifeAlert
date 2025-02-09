@@ -1,8 +1,8 @@
 # WifeAlert
-<div align="center"> A customizable Twitch live notification tool with advanced features for Windows.  </div>
-<div align="center">
-  <img src="assets/screenshot.png" alt="WifeAlert Logo" width="200"/>
-  </div>
+A customizable Twitch live notification tool with advanced features for Windows.
+
+<img src="assets/screenshot.png" alt="WifeAlert Logo" width="200"/>
+
 
 
 
