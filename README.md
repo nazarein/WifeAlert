@@ -67,17 +67,6 @@ python main.py
 1. Launch WifeAlert
 2. Enter Twitch usernames to monitor in the input field
 3. Click "Add" to add them to your monitoring list
-4. Click "Allow Notifications" to begin monitoring
-
-### Chat Features Setup
-
-To use chat message features:
-
-1. Click the "Post" checkbox next to a streamer
-2. Shift+Click the checkbox to configure messages
-3. Get your chat OAuth token from [Twitch Token Generator](https://twitchtokengenerator.com)
-4. Enter your Twitch username and OAuth token
-5. Configure your desired chat messages and timing
 
 ### Notification Options
 
@@ -87,11 +76,21 @@ For each streamer, you can configure:
 - Auto-open stream 
 - Chat messages
 
+### Chat Features Setup(OPTIONAL)
+
+To use chat message features:
+
+1. Click the "Post" checkbox next to a streamer
+2. Shift+Click the checkbox to configure messages
+3. Get your chat OAuth token from [Twitch Token Generator](https://twitchtokengenerator.com)
+4. Enter your Twitch username and OAuth token
+5. Configure your desired chat messages and timing
+
 ### Additional Settings
 
+- **Start With Windows**: Launch automatically on system startup
 - **Start Minimized**: Launch WifeAlert in system tray
 - **Suppress Alert Sounds**: Temporarily disable all sound notifications
-- **Start With Windows**: Launch automatically on system startup
 - **Prevent Opening**: Temporarily disable auto-opening streams
 
 ## Security
