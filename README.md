@@ -57,6 +57,7 @@ python main.py
 - 100MB free disk space
 - Internet connection
 - Python 3.8+ (only for running from source)
+- Git (only for running from source)
 
 **Note:** Settings are stored in `%APPDATA%\WifeAlert\` regardless of installation method.
 
