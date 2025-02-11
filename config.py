@@ -7,4 +7,4 @@ class Config:
     NONCE_LENGTH = 30
     REQUEST_TIMEOUT = 30
     MAX_RETRY_COUNT = 1
-    CLIENT_ID = "x0dee112urnxfxas4q9uto5m0a3p03"  # Public client ID
+    CLIENT_ID = "kimne78kx3ncx6brgo4mv6wki5h1ko"  # Public client ID
