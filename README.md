@@ -34,7 +34,7 @@ All methods provide identical features and functionality. Choose your preferred 
 3. Double-click to run
 
 #### Method 3: Running from Source
-You'll need Python 3.8 or higher installed.
+You'll need Git and Python 3.8 or higher installed.
 
 ```bash
 # Clone the repository
