@@ -17,18 +17,45 @@ def get_program_dir():
 
 def ensure_app_dirs():
     """Create necessary application directories"""
-    app_data = get_app_data_dir()
+    try:
+        app_data = get_app_data_dir()
+        
+        # Create main directory first
+        if not os.path.exists(app_data):
+            os.makedirs(app_data)
 
-    os.makedirs(app_data, exist_ok=True)
+        # Then create all subdirectories
+        subdirs = [
+            "data",
+            "assets",
+            os.path.join("assets", "profile_cache")
+        ]
 
-    dirs = [
-        os.path.join(app_data, "data"),
-        os.path.join(app_data, "assets"),
-        os.path.join(app_data, "assets", "profile_cache"),
-    ]
+        for subdir in subdirs:
+            full_path = os.path.join(app_data, subdir)
+            if not os.path.exists(full_path):
+                os.makedirs(full_path)
 
-    for dir_path in dirs:
-        os.makedirs(dir_path, exist_ok=True)
+        # Create empty settings files if they don't exist
+        files_to_create = [
+            ("settings.json", "{}"),
+            ("streamers.json", "{}"),
+            ("chat_login.json", "{}")
+        ]
+
+        for filename, default_content in files_to_create:
+            file_path = os.path.join(app_data, "data", filename)
+            if not os.path.exists(file_path):
+                with open(file_path, "w") as f:
+                    f.write(default_content)
+
+    except Exception as e:
+        # If we can't create directories, something is seriously wrong
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.critical(None, "Error", 
+            f"Failed to create required directories in AppData.\n\n"
+            f"Please try running as administrator for first launch.")
+        sys.exit(1)
 
 
 def get_data_file(filename):
