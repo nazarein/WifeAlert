@@ -1,0 +1,8 @@
+PyQt6
+qasync
+aiohttp
+websockets
+cryptography
+desktop-notifier
+pywin32
+certifi
