@@ -1,3 +1,8 @@
+"""
+Dialog window for Twitch chat authentication. Handles secure storage of login credentials
+using encrypted OAuth tokens. Features a dark theme UI and persistent login state.
+"""
+
 import json
 import os
 from PyQt6.QtWidgets import (
@@ -21,12 +26,27 @@ from utils.error_handler import (
 
 
 class ChatLoginDialog(QDialog):
+    """
+    A dialog window for managing Twitch chat credentials. Provides fields for username
+    and OAuth token input, with secure encryption for token storage. Features:
+    - Dark theme UI with custom styling
+    - Automatic loading of saved credentials
+    - Secure token encryption/decryption
+    - Link to token generation website
+    - Input validation and error handling
+    """
+
     def __init__(self, parent=None):
+        """
+        Creates the login dialog with username and OAuth token fields.
+        Loads any previously saved credentials and applies dark theme styling.
+        Handles encryption setup and credential decryption if saved data exists.
+        """
         super().__init__(parent)
         self.setWindowTitle("Twitch Chat Login")
         self.setFixedWidth(300)
 
-        # Force dark theme
+        # Dark theme configuration
         palette = self.palette()
         palette.setColor(QPalette.ColorRole.Window, QColor(30, 30, 30))
         self.setPalette(palette)
@@ -116,6 +136,13 @@ class ChatLoginDialog(QDialog):
         layout.addWidget(buttons)
 
     def accept(self):
+        """
+        Processes the login form submission. Handles:
+        - Input validation and OAuth token formatting
+        - Token encryption for secure storage
+        - Saving credentials to local settings file
+        - Error handling for encryption and file operations
+        """
         try:
             username = self.username_input.text().strip()
             oauth = self.oauth_input.text().strip()
@@ -125,12 +152,14 @@ class ChatLoginDialog(QDialog):
             token_encryption = TokenEncryption()
             if not token_encryption.cipher_suite:
                 from utils.error_handler import handle_encryption_operation_error
+
                 handle_encryption_operation_error(self, "initialize")
                 return
 
             encrypted_oauth = token_encryption.encrypt_token(oauth)
             if not encrypted_oauth or encrypted_oauth == oauth:
                 from utils.error_handler import handle_encryption_operation_error
+
                 handle_encryption_operation_error(self, "encrypt")
                 return
 
@@ -143,6 +172,7 @@ class ChatLoginDialog(QDialog):
                     json.dump(settings, f, indent=4)
             except Exception:
                 from utils.error_handler import handle_encryption_save_error
+
                 handle_encryption_save_error(self)
                 return
 
@@ -151,4 +181,5 @@ class ChatLoginDialog(QDialog):
 
         except Exception:
             from utils.error_handler import show_error
+
             show_error(self, "Error", "Failed to save chat login information")

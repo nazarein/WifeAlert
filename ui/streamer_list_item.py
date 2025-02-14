@@ -1,3 +1,9 @@
+"""
+Individual streamer entry widget for the main window's list. Provides controls
+for notifications, sounds, auto-open, and chat message settings. Features
+shift-click interactions for advanced options.
+"""
+
 from PyQt6.QtWidgets import (
     QWidget,
     QHBoxLayout,
@@ -16,6 +22,16 @@ import os
 
 
 class StreamerListItem(QWidget):
+    """
+    Widget representing a single streamer in the monitoring list. Features:
+    - Live status indicator
+    - Notification toggle
+    - Custom sound selection with shift-click
+    - Auto-open toggle with mod view option
+    - Chat message configuration with shift-click
+    - Dark theme styling
+    """
+
     def __init__(self, streamer_name, sound_path=None, parent=None):
         super().__init__(parent)
         self.streamer_name = streamer_name
@@ -27,7 +43,7 @@ class StreamerListItem(QWidget):
         layout.setContentsMargins(5, 0, 5, 0)
         layout.setSpacing(8)
 
-        # Set up dark palette for checkboxes
+        # Dark theme configuration for checkbox controls
         checkbox_palette = QPalette()
         checkbox_palette.setColor(QPalette.ColorRole.Base, QColor(60, 60, 60))
         checkbox_palette.setColor(QPalette.ColorRole.Window, QColor(60, 60, 60))
@@ -55,9 +71,7 @@ class StreamerListItem(QWidget):
         self.notify_checkbox = QCheckBox()
         self.notify_checkbox.setFixedWidth(35)
         self.notify_checkbox.setChecked(True)
-        self.notify_checkbox.setToolTip(
-            "Enable desktop notifications"
-        )
+        self.notify_checkbox.setToolTip("Enable desktop notifications")
         self.notify_checkbox.setPalette(checkbox_palette)
         layout.addWidget(self.notify_checkbox)
 
@@ -90,6 +104,13 @@ class StreamerListItem(QWidget):
         self.setLayout(layout)
 
     def set_live_status(self, is_live: bool):
+        """
+        Updates the live status indicator for the streamer.
+        Shows red dot when live, hidden when offline.
+
+        Args:
+            is_live: True if streamer is currently live
+        """
         if is_live:
             self.live_indicator.setStyleSheet("color: #FF0000; font-size: 18px;")
         else:
@@ -98,6 +119,12 @@ class StreamerListItem(QWidget):
             )
 
     def toggle_sound(self, checked):
+        """
+        Handles sound notification toggle and custom sound selection.
+        Shift-click opens file dialog for custom WAV selection.
+        Regular click toggles between default and no sound.
+        Updates sound effects in the notification system.
+        """
         if self._handling_shift_click:
             return
 
@@ -141,6 +168,12 @@ class StreamerListItem(QWidget):
                     main_window.tray_icon.initialize_sound_effects()
 
     def toggle_emote(self, checked):
+        """
+        Manages chat message settings for stream notifications.
+        Shift-click opens configuration dialog for message content and timing.
+        Regular click enables/disables configured message.
+        Saves settings to persistent storage.
+        """
         if self._handling_shift_click:
             return
         if QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier:
@@ -200,6 +233,12 @@ class StreamerListItem(QWidget):
                 pass
 
     def toggle_open(self, checked):
+        """
+        Controls auto-open behavior when streamer goes live.
+        Shift-click enables mod view mode for moderator dashboard.
+        Regular click toggles between normal view and disabled.
+        Updates settings in main window configuration.
+        """
         if self._handling_shift_click:
             return
         modifiers = QApplication.keyboardModifiers()

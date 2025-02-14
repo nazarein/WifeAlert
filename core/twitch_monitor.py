@@ -1,3 +1,9 @@
+"""
+Base monitor class for Twitch stream status tracking. Handles WebSocket connections
+to Twitch's PubSub system, manages channel subscriptions, and processes stream
+up/down events. Provides core functionality for real-time stream monitoring.
+"""
+
 import asyncio
 import json
 import websockets
@@ -10,6 +16,15 @@ from utils.error_handler import handle_pubsub_connection_error
 
 
 class TwitchMonitor:
+    """
+    Core monitor for tracking Twitch stream status changes. Features:
+    - WebSocket connection to Twitch PubSub
+    - Channel ID lookup and management
+    - Automatic reconnection handling
+    - Connection health monitoring
+    - Event handling for stream status changes
+    """
+
     def __init__(self, client_id: str, usernames: List[str]):
         self.client_id = client_id
         self.usernames = [username.lower() for username in usernames]
@@ -26,6 +41,11 @@ class TwitchMonitor:
         self._running_task = None
 
     async def initialize(self):
+        """
+        Sets up initial monitor state by looking up channel IDs for usernames.
+        Updates internal mappings and prepares channel list for monitoring.
+        Handles missing or invalid usernames gracefully.
+        """
         try:
             usernames_to_lookup = [
                 username
@@ -46,6 +66,16 @@ class TwitchMonitor:
             pass
 
     async def handle_message(self, message_data: dict):
+        """
+        Processes incoming WebSocket messages from Twitch PubSub.
+        Handles different message types:
+        - PONG: Connection health checks
+        - RESPONSE: Subscription confirmations
+        - MESSAGE: Stream status change events
+
+        Args:
+            message_data: Raw message data from WebSocket
+        """
         try:
             msg_type = message_data.get("type")
             if msg_type == "PONG":
@@ -84,6 +114,11 @@ class TwitchMonitor:
             pass
 
     async def maintain_connection(self, websocket):
+        """
+        Maintains WebSocket connection health through ping/pong mechanism.
+        Monitors connection timeouts and triggers reconnection if needed.
+        Runs continuously while monitor is active.
+        """
         last_pong = asyncio.get_event_loop().time()
         while self.should_run:
             try:
@@ -105,6 +140,11 @@ class TwitchMonitor:
                 break
 
     async def subscribe_to_topics(self, websocket):
+        """
+        Subscribes to PubSub topics for monitored channels.
+        Implements retry logic for failed subscriptions.
+        Verifies subscription responses and handles errors.
+        """
         max_retries = 3
         retry_delay = 1
 
@@ -146,6 +186,14 @@ class TwitchMonitor:
                 raise
 
     async def listen_for_stream_status(self):
+        """
+        Main WebSocket listener loop. Handles:
+        - Connection establishment and maintenance
+        - Message processing
+        - Error recovery and reconnection
+        - Connection health monitoring
+        Implements exponential backoff for reconnection attempts.
+        """
         reconnect_delay = Config.RECONNECT_INTERVAL
         max_reconnect_delay = 60
         connection_attempts = 0
@@ -217,7 +265,14 @@ class TwitchMonitor:
             await self.subscribe_to_topics(self.ws)
 
     async def reconnect(self):
-        """Properly reconnect monitor without creating a new instance"""
+        """
+        Performs clean reconnection of the monitor.
+        - Closes existing connection
+        - Clears internal state
+        - Reinitializes channel subscriptions
+        - Establishes new WebSocket connection
+        Maintains monitor instance for continuity.
+        """
         if self.ws:
             try:
                 await self.ws.close()
@@ -239,6 +294,12 @@ class TwitchMonitor:
         await self.listen_for_stream_status()
 
     async def run(self):
+        """
+        Main entry point for monitor operation.
+        Initializes monitoring state and starts WebSocket listener.
+        Handles graceful shutdown on cancellation.
+        Manages monitor lifecycle and cleanup.
+        """
         if (
             hasattr(self, "_running_task")
             and self._running_task
@@ -268,12 +329,31 @@ class TwitchMonitor:
                     pass
 
     async def handle_stream_up(self, channel_id: str, server_time: str):
+        """
+        Virtual method for handling stream start events.
+        Implemented by subclasses to define specific behavior.
+
+        Args:
+            channel_id: Twitch channel ID that went live
+            server_time: Server timestamp of the event
+        """
         pass
 
     async def handle_stream_down(self, channel_id: str):
+        """
+        Handles stream end events by updating internal state.
+        Updates live channel tracking and UI indicators.
+
+        Args:
+            channel_id: Twitch channel ID that went offline
+        """
         if channel_id in self.live_channels:
             self.live_channels.remove(channel_id)
             self.update_live_indicators()
 
     def update_live_indicators(self):
+        """
+        Virtual method for updating UI elements with live status.
+        Implemented by subclasses to handle specific UI updates.
+        """
         pass

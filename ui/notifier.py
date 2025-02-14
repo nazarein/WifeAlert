@@ -1,3 +1,9 @@
+"""
+System tray notification handler for WifeAlert. Manages desktop notifications,
+custom sound effects, and system tray icon functionality. Provides visual and
+audio alerts when streamers go live.
+"""
+
 import os
 import asyncio
 from pathlib import Path
@@ -9,6 +15,14 @@ from utils.paths import get_asset_file
 
 
 class WifeAlertNotifier(QSystemTrayIcon):
+    """
+    System tray icon with notification capabilities. Handles:
+    - Desktop notifications when streamers go live
+    - Custom sound effects per streamer
+    - System tray menu and actions
+    - Click-to-open stream functionality
+    """
+
     def __init__(self, window, icon=None, parent=None):
         super().__init__(parent)
         self.window = window
@@ -34,7 +48,11 @@ class WifeAlertNotifier(QSystemTrayIcon):
         self.initialize_sound_effects()
 
     def initialize_sound_effects(self):
-        """Initialize sound effects for all streamers at startup"""
+        """
+        Sets up sound effects for all monitored streamers at startup.
+        Loads custom sounds if configured, otherwise uses default alert sound.
+        Checks audio device availability before initializing.
+        """
         try:
             if not QMediaDevices.audioOutputs():
                 return
@@ -68,6 +86,18 @@ class WifeAlertNotifier(QSystemTrayIcon):
         streamer_name: str = None,
         profile_image: str = None,
     ):
+        """
+        Shows a desktop notification with optional sound effect.
+
+        Args:
+            title: Notification title text
+            message: Main notification message
+            streamer_name: Name of streamer for custom sound/click handling
+            profile_image: Path to streamer's profile image for notification
+
+        Returns:
+            bool: True if notification was sent successfully
+        """
         try:
             if streamer_name:
                 await self.play_streamer_sound(streamer_name)
@@ -95,6 +125,7 @@ class WifeAlertNotifier(QSystemTrayIcon):
             def open_stream():
                 if streamer_name:
                     import webbrowser
+
                     stream_url = f"https://twitch.tv/{streamer_name}"
                     webbrowser.open(stream_url)
 
@@ -110,7 +141,14 @@ class WifeAlertNotifier(QSystemTrayIcon):
             return False
 
     async def play_streamer_sound(self, streamer_name: str):
-        """Play sound effect for a specific streamer if configured"""
+        """
+        Plays notification sound for a specific streamer.
+        Uses custom sound if configured, falls back to default alert.
+        Handles sound effect lifecycle and volume control.
+
+        Args:
+            streamer_name: Name of streamer to play sound for
+        """
         try:
             if self.window.suppress_sounds_checkbox.isChecked():
                 return
@@ -149,7 +187,11 @@ class WifeAlertNotifier(QSystemTrayIcon):
             pass
 
     async def cleanup_sound_effects(self):
-        """Clean up sound effects properly"""
+        """
+        Properly disposes of all sound effects on shutdown.
+        Stops any playing sounds and clears the effects cache
+        to prevent resource leaks.
+        """
         for sound in list(self.sound_effects.values()):
             try:
                 sound.stop()

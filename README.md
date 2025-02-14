@@ -16,8 +16,6 @@ A customizable Twitch notification tool.
 - 🎨 **User-Friendly Interface**: Clean, intuitive design with system tray support
 - 💬 **Chat Integration**: Send automated chat messages when streams start
 
-## Installation
-
 ### Installation Methods
 
 All methods provide identical features and functionality. Choose your preferred method:

@@ -1,3 +1,9 @@
+"""
+Secure token encryption system for storing sensitive credentials.
+Uses Fernet encryption with key rotation support and secure file storage.
+Implements PBKDF2 key derivation for enhanced security.
+"""
+
 import os
 import base64
 import hashlib
@@ -13,6 +19,16 @@ from utils.error_handler import (
 
 
 class TokenEncryption:
+    """
+    Handles secure storage and encryption of authentication tokens.
+    Features:
+    - Secure key generation and storage
+    - Salt-based key derivation
+    - Version-tagged encryption
+    - Automatic key rotation
+    - Platform-specific file security
+    """
+
     ITERATIONS = 480000
     KEY_VERSION = 1
 
@@ -23,9 +39,26 @@ class TokenEncryption:
         self.cipher_suite = self._initialize_cipher() if self.key else None
 
     def _generate_salt(self) -> bytes:
+        """
+        Generates cryptographically secure random salt.
+
+        Returns:
+            16 bytes of random data for salt
+        """
         return os.urandom(16)
 
     def _derive_key(self, base_key: bytes, salt: bytes) -> bytes:
+        """
+        Derives encryption key using PBKDF2 with SHA256.
+        Uses high iteration count for security.
+
+        Args:
+            base_key: Source key material
+            salt: Random salt for derivation
+
+        Returns:
+            Base64 encoded derived key
+        """
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
@@ -35,6 +68,14 @@ class TokenEncryption:
         return base64.urlsafe_b64encode(kdf.derive(base_key))
 
     def _load_or_create_key(self) -> bytes:
+        """
+        Loads existing encryption key or creates new one.
+        Handles key file storage with proper permissions.
+        Recreates key if existing one is corrupted.
+
+        Returns:
+            Derived encryption key or None on failure
+        """
         try:
             if os.path.exists(self.key_file) and os.path.exists(self.salt_file):
                 try:
@@ -65,6 +106,17 @@ class TokenEncryption:
             return None
 
     def _secure_file_write(self, filepath: str, data: bytes):
+        """
+        Writes data to file with secure permissions.
+        Sets restrictive file access on Unix systems.
+
+        Args:
+            filepath: Path to write file
+            data: Binary data to write
+
+        Raises:
+            Exception on write failure
+        """
         try:
             with open(filepath, "wb") as f:
                 if os.name == "posix":
@@ -79,6 +131,14 @@ class TokenEncryption:
             raise
 
     def _set_file_attributes(self, filepath: str):
+        """
+        Sets secure file attributes on Windows.
+        Restricts access to current user only.
+        Sets hidden attribute and proper ACLs.
+
+        Args:
+            filepath: Path to secure file
+        """
         try:
             if os.name == "nt":
                 import win32security
@@ -110,11 +170,26 @@ class TokenEncryption:
             pass
 
     def _initialize_cipher(self) -> MultiFernet:
+        """
+        Creates Fernet cipher suite for encryption.
+        Supports multiple keys for rotation.
+
+        Returns:
+            MultiFernet instance or None if key missing
+        """
         if not self.key:
             return None
         return MultiFernet([Fernet(self.key)])
 
     def rotate_key(self):
+        """
+        Rotates encryption key for security.
+        Generates new key and updates stored files.
+        Maintains ability to decrypt old data.
+
+        Raises:
+            Exception if encryption not initialized
+        """
         if not self.cipher_suite:
             raise Exception("Encryption not initialized")
 
@@ -130,6 +205,16 @@ class TokenEncryption:
         self.key = new_key
 
     def encrypt_token(self, token: str) -> str:
+        """
+        Encrypts token with version tagging.
+        Uses current encryption key and cipher suite.
+
+        Args:
+            token: Plain text token to encrypt
+
+        Returns:
+            Encrypted token or original on failure
+        """
         try:
             if not self.cipher_suite:
                 from utils.error_handler import handle_encryption_operation_error
@@ -146,6 +231,16 @@ class TokenEncryption:
             return token
 
     def decrypt_token(self, encrypted_token: str) -> str:
+        """
+        Decrypts token and handles versioning.
+        Supports tokens from previous key versions.
+
+        Args:
+            encrypted_token: Encrypted token string
+
+        Returns:
+            Decrypted token or original on failure
+        """
         try:
             if not self.cipher_suite:
                 from utils.error_handler import handle_encryption_operation_error

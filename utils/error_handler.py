@@ -1,15 +1,35 @@
+"""
+Error handling and user feedback system. Provides consistent error reporting
+through message boxes and handles specific error cases for encryption,
+authentication, and connection issues. Manages cleanup for corrupted states.
+"""
+
 from PyQt6.QtWidgets import QMessageBox
 import os
 from utils.paths import get_data_file
 
 
 def show_error(parent, title, message):
-    """Show an error message box"""
+    """
+    Displays error message in a modal dialog box.
+
+    Args:
+        parent: Parent window for modal display
+        title: Error dialog title
+        message: Detailed error message
+    """
     QMessageBox.critical(parent, title, message)
 
 
 def handle_encryption_error(parent):
-    """Handle corrupted encryption files"""
+    """
+    Handles corrupted encryption key files.
+    Attempts to remove corrupted files and notifies user.
+    Guides user through recovery process.
+
+    Args:
+        parent: Parent window for error dialog
+    """
     key_file = get_data_file(".encryption_key")
     salt_file = get_data_file(".salt")
 
@@ -34,7 +54,14 @@ def handle_encryption_error(parent):
 
 
 def handle_streamer_not_found(parent, username):
-    """Handle invalid/not found streamer username"""
+    """
+    Handles invalid or nonexistent Twitch usernames.
+    Provides user feedback for typos or deleted accounts.
+
+    Args:
+        parent: Parent window for error dialog
+        username: Invalid username that caused error
+    """
     show_error(
         parent,
         "Invalid Username",
@@ -43,7 +70,13 @@ def handle_streamer_not_found(parent, username):
 
 
 def handle_invalid_oauth(parent):
-    """Handle invalid OAuth token"""
+    """
+    Handles invalid Twitch OAuth token errors.
+    Guides user to token generation service.
+
+    Args:
+        parent: Parent window for error dialog
+    """
     show_error(
         parent,
         "Authentication Error",
@@ -52,7 +85,13 @@ def handle_invalid_oauth(parent):
 
 
 def handle_encryption_save_error(parent):
-    """Handle failures in saving encryption keys"""
+    """
+    Handles failures in encryption key storage.
+    Usually indicates permission issues in AppData.
+
+    Args:
+        parent: Parent window for error dialog
+    """
     show_error(
         parent,
         "Security Error",
@@ -61,7 +100,14 @@ def handle_encryption_save_error(parent):
 
 
 def handle_encryption_operation_error(parent, operation="encrypt"):
-    """Handle encryption/decryption operation failures"""
+    """
+    Handles failures in encryption/decryption operations.
+    Provides guidance for credential recovery.
+
+    Args:
+        parent: Parent window for error dialog
+        operation: Type of operation that failed ('encrypt'/'decrypt'/'initialize')
+    """
     show_error(
         parent,
         "Encryption Error",
@@ -70,7 +116,13 @@ def handle_encryption_operation_error(parent, operation="encrypt"):
 
 
 def handle_pubsub_connection_error(parent):
-    """Handle PubSub connection failures"""
+    """
+    Handles Twitch PubSub connection failures.
+    Usually indicates network or API issues.
+
+    Args:
+        parent: Parent window for error dialog
+    """
     show_error(
         parent,
         "Connection Error",
@@ -79,7 +131,13 @@ def handle_pubsub_connection_error(parent):
 
 
 def handle_chat_connection_error(parent):
-    """Handle failures in connecting to Twitch chat"""
+    """
+    Handles Twitch chat connection failures.
+    Could be due to invalid credentials or network issues.
+
+    Args:
+        parent: Parent window for error dialog
+    """
     show_error(
         parent,
         "Chat Connection Error",

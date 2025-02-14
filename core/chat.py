@@ -1,3 +1,9 @@
+"""
+Twitch chat connection manager using IRC protocol. Handles authentication,
+channel joining, message sending, and connection maintenance. Implements
+singleton pattern to ensure single chat connection across the application.
+"""
+
 import socket
 import asyncio
 from typing import Optional, Set
@@ -8,6 +14,16 @@ from utils.error_handler import (
 
 
 class TwitchChat:
+    """
+    Singleton class for managing Twitch chat connections via IRC.
+    Features:
+    - Automatic reconnection handling
+    - Connection health monitoring
+    - Channel join/leave management
+    - Message sending with rate limiting
+    - Keep-alive ping/pong handling
+    """
+
     _instance = None
     _connected = False
     _current_oauth = None
@@ -26,6 +42,11 @@ class TwitchChat:
         return cls._instance
 
     async def _keep_alive(self):
+        """
+        Maintains IRC connection through ping/pong messages.
+        Monitors connection health and triggers reconnection if needed.
+        Runs as a background task while connection is active.
+        """
         while self._connected and self.sock:
             try:
                 current_time = asyncio.get_event_loop().time()
@@ -56,6 +77,11 @@ class TwitchChat:
         await self._handle_disconnection()
 
     async def _handle_disconnection(self):
+        """
+        Handles connection loss by attempting to reconnect.
+        Implements exponential backoff for retry attempts.
+        Rejoins previously joined channels on successful reconnection.
+        """
         if not self._connected:
             self.disconnect()
 
@@ -78,6 +104,16 @@ class TwitchChat:
                 return False
 
     async def _join_channel(self, channel: str) -> bool:
+        """
+        Joins a Twitch chat channel with timeout handling.
+        Waits for join confirmation from server.
+
+        Args:
+            channel: Channel name to join (with or without #)
+
+        Returns:
+            bool: True if join successful, False otherwise
+        """
         if not channel.startswith("#"):
             channel = f"#{channel}"
 
@@ -111,6 +147,17 @@ class TwitchChat:
             return False
 
     async def ensure_connected(self, username: str, oauth: str) -> bool:
+        """
+        Verifies and maintains chat connection state.
+        Reconnects if needed with new or existing credentials.
+
+        Args:
+            username: Twitch username for authentication
+            oauth: OAuth token for authentication
+
+        Returns:
+            bool: True if connected successfully
+        """
         try:
             if (
                 not self._connected
@@ -131,6 +178,18 @@ class TwitchChat:
             return False
 
     async def connect(self, username: str, oauth: str) -> bool:
+        """
+        Establishes new IRC connection to Twitch chat.
+        Handles authentication and capability requests.
+        Sets up keep-alive monitoring.
+
+        Args:
+            username: Twitch username for authentication
+            oauth: OAuth token for authentication
+
+        Returns:
+            bool: True if connection successful
+        """
         try:
             if self._connected:
                 self.disconnect()
@@ -174,6 +233,11 @@ class TwitchChat:
             return False
 
     def disconnect(self):
+        """
+        Cleanly disconnects from Twitch chat.
+        Cancels background tasks, closes socket,
+        and resets connection state.
+        """
         try:
             if self._ping_task:
                 self._ping_task.cancel()
@@ -191,6 +255,17 @@ class TwitchChat:
             pass
 
     async def send_message(self, channel: str, message: str) -> bool:
+        """
+        Sends chat message to specified channel.
+        Ensures connection and channel membership before sending.
+
+        Args:
+            channel: Target channel for message
+            message: Content to send
+
+        Returns:
+            bool: True if message sent successfully
+        """
         try:
             if not await self.ensure_connected(
                 self._current_username, self._current_oauth

@@ -1,3 +1,9 @@
+"""
+GraphQL client for Twitch API interactions. Handles user lookups, channel info retrieval,
+and profile image caching. Implements rate limiting and connection management for
+reliable API communication.
+"""
+
 from typing import Dict, Any, List
 import os
 import json
@@ -9,6 +15,15 @@ from utils.paths import get_data_file
 
 
 class GQLClient:
+    """
+    Client for making GraphQL requests to Twitch's API. Features:
+    - Username to channel ID resolution
+    - Profile image caching
+    - Rate limiting for API requests
+    - Connection pooling and timeout handling
+    - Persistent cache for channel IDs
+    """
+
     def __init__(self, client_id: str):
         self.client_id = client_id
         self.headers = {
@@ -19,6 +34,17 @@ class GQLClient:
         self._rate_limit_semaphore = asyncio.Semaphore(10)
 
     async def lookup_usernames(self, usernames: List[str]) -> Dict[str, str]:
+        """
+        Resolves Twitch usernames to their channel IDs. Uses cached values when available
+        and fetches new ones from the API when needed. Also downloads and caches profile
+        images for new users.
+
+        Args:
+            usernames: List of Twitch usernames to look up
+
+        Returns:
+            Dict mapping lowercase usernames to their channel IDs
+        """
         username_to_id = {}
         usernames_to_lookup = []
 
@@ -73,7 +99,7 @@ class GQLClient:
 
                         query["variables"]["login"] = username
 
-                        # Create session with SSL verification disabled
+                        # SSL verification bypass for packaged executable
                         async with aiohttp.ClientSession(
                             connector=aiohttp.TCPConnector(ssl=False)
                         ) as session:
@@ -111,6 +137,16 @@ class GQLClient:
         return username_to_id
 
     async def get_channel_info(self, channel_id: str) -> Dict[str, Any]:
+        """
+        Fetches detailed channel information from Twitch's GraphQL API.
+        Retrieves current stream status, viewer count, game info, and profile data.
+
+        Args:
+            channel_id: Twitch channel ID to look up
+
+        Returns:
+            Dict containing channel information or empty dict on error
+        """
         query = {
             "operationName": "GetChannelInfo",
             "query": """
@@ -136,7 +172,7 @@ class GQLClient:
 
         try:
             async with self._rate_limit_semaphore:
-                # Create session with SSL verification disabled
+                # SSL verification bypass for packaged executable
                 async with aiohttp.ClientSession(
                     connector=aiohttp.TCPConnector(ssl=False)
                 ) as session:

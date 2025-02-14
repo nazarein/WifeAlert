@@ -1,3 +1,9 @@
+"""
+Main application window for WifeAlert. Provides the primary interface for managing
+Twitch stream monitoring, notifications, and user preferences. Features a dark theme
+UI with system tray integration and persistent settings.
+"""
+
 import json
 import os
 import asyncio
@@ -29,17 +35,28 @@ from ui.streamer_list_item import StreamerListItem
 
 
 class MainWindow(QMainWindow):
+    """
+    Primary window of WifeAlert that manages the streamer list and monitoring controls.
+    Features:
+    - Dark theme UI with custom styling
+    - Draggable window with custom title bar
+    - System tray integration with notifications
+    - Persistent settings and streamer list
+    - Auto-start and minimize options
+    - Sound and notification controls per streamer
+    """
+
     def __init__(self, monitor=None):
         super().__init__()
         self.monitor = monitor
         self.setWindowTitle("WifeAlert")
         self.setMinimumSize(300, 400)
         self.setFixedWidth(365)
-        self._should_start_monitoring = True  # Set to True by default
+        self._should_start_monitoring = True  # Monitoring enabled by default
         self.dragging = False
         self.drag_position = None
 
-        # If monitor exists, enable notifications by default
+        # Notifications enabled when monitor exists
         if self.monitor:
             self.monitor.suppress_actions = False
 
@@ -53,6 +70,11 @@ class MainWindow(QMainWindow):
         self.tray_icon.activated.connect(self.trayIconActivated)
 
     def start_monitoring(self):
+        """
+        Initiates Twitch stream monitoring for all added streamers.
+        Creates an async task to handle real-time stream status updates
+        and notifications. Manages the monitor's running state and task lifecycle.
+        """
         if not self.monitor:
             return
 
@@ -112,24 +134,32 @@ class MainWindow(QMainWindow):
             event.accept()
 
     def setup_ui(self):
+        """
+        Creates and configures all UI elements of the main window.
+        Sets up the dark theme, streamer list, control buttons,
+        and preference checkboxes. Initializes the monitoring system
+        if auto-start is enabled.
+        """
         icon_path = get_asset_file("icon.png")
         self.app_icon = QIcon(icon_path)
         self.setWindowIcon(self.app_icon)
         QApplication.setWindowIcon(self.app_icon)
         main_widget = QWidget()
-        # Force dark theme
+
+        # Dark theme configuration
         palette = main_widget.palette()
         palette.setColor(QPalette.ColorRole.Window, QColor(30, 30, 30))
         main_widget.setPalette(palette)
-        self.setPalette(palette)  # Apply to main window as well
+        self.setPalette(palette)  # Main window uses same theme
         main_widget.setAutoFillBackground(True)
-        self.setAutoFillBackground(True)  # Ensure main window background is also forced
+        self.setAutoFillBackground(True)  # Background color applies to all areas
         self.setCentralWidget(main_widget)
-        # Define consistent colors
-        DARK_BG = "rgb(30, 30, 30)"  # Window background
-        DARKER_BG = "rgb(26, 26, 26)"  # List background
-        ALT_BG = "rgb(42, 42, 42)"  # Alternate list item
-        CONTROL_BG = "rgb(60, 60, 60)"  # Buttons, inputs
+
+        # Theme colors for UI components
+        DARK_BG = "rgb(30, 30, 30)"  # Main background shade
+        DARKER_BG = "rgb(26, 26, 26)"  # Deeper contrast for lists
+        ALT_BG = "rgb(42, 42, 42)"  # Alternating row highlight
+        CONTROL_BG = "rgb(60, 60, 60)"  # Interactive elements shade
         TEXT_COLOR = "white"
 
         main_widget.setStyleSheet(
@@ -209,11 +239,11 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.remove_btn)
         self.monitor_btn = QPushButton(
             "Suppress Notifications"
-        )  # Start with notifications enabled
+        )  # Initial notification state
         self.monitor_btn.clicked.connect(self.toggle_monitoring)
         layout.addWidget(self.monitor_btn)
 
-        # Create checkboxes with dark palette
+        # Dark theme preference toggles
         checkbox_palette = QPalette()
         checkbox_palette.setColor(QPalette.ColorRole.Base, QColor(60, 60, 60))
         checkbox_palette.setColor(QPalette.ColorRole.Window, QColor(60, 60, 60))
@@ -263,6 +293,11 @@ class MainWindow(QMainWindow):
                 QTimer.singleShot(0, lambda: asyncio.create_task(self.monitor.run()))
 
     def toggle_monitoring(self):
+        """
+        Toggles the notification system on/off. When enabled, checks current
+        stream status and sets up notifications. When disabled, clears all
+        live indicators and suppresses notifications.
+        """
         if self.monitor_btn.text() == "Allow Notifications":
             if not self.monitor:
                 self.monitor = WifeAlertMonitor(Config.CLIENT_ID, [])
@@ -307,6 +342,11 @@ class MainWindow(QMainWindow):
                         widget.set_live_status(False)
 
     def add_streamer(self):
+        """
+        Adds a new streamer to the monitoring list. Validates the username,
+        updates the UI, and if monitoring is active, sets up real-time
+        tracking for the new streamer. Maintains alphabetical order in the list.
+        """
         streamer = self.streamer_input.text().strip().lower()
         if streamer:
             if not any(
@@ -420,6 +460,11 @@ class MainWindow(QMainWindow):
                 self.save_streamers()
 
     def save_streamers(self):
+        """
+        Saves the current list of monitored streamers and their settings
+        to a JSON file. Preserves monitoring state, channel IDs, and
+        individual streamer preferences for persistence between sessions.
+        """
         data = {
             "monitored_streamers": [],
             "channel_ids": {},
@@ -442,6 +487,11 @@ class MainWindow(QMainWindow):
             pass
 
     def remove_streamer(self):
+        """
+        Removes the selected streamer from monitoring. Cleans up associated
+        websocket subscriptions and monitoring state. Updates the UI and
+        saves changes to persistent storage.
+        """
         current = self.streamer_list.currentRow()
         if current >= 0:
             widget = self.streamer_list.itemWidget(self.streamer_list.item(current))
@@ -479,6 +529,11 @@ class MainWindow(QMainWindow):
                 self.save_streamers()
 
     def load_streamers(self):
+        """
+        Loads saved streamer list and settings from storage. Restores
+        individual streamer preferences, notification settings, and
+        monitoring state. Sets up initial monitoring if previously active.
+        """
         try:
             filepath = get_data_file("streamers.json")
             if os.path.exists(filepath):
@@ -561,6 +616,11 @@ class MainWindow(QMainWindow):
             pass
 
     def save_settings(self):
+        """
+        Saves all application settings including window preferences,
+        auto-start options, and individual streamer configurations.
+        Handles error cases to prevent settings corruption.
+        """
         try:
             current_settings = self.load_settings()
             current_settings["start_minimized"] = (
@@ -635,6 +695,11 @@ class MainWindow(QMainWindow):
             self.raise_()
 
     async def shutdown(self):
+        """
+        Performs clean application shutdown. Stops active monitoring,
+        closes websocket connections, saves current state, and cleans up
+        system tray resources before exit.
+        """
         if self.monitor:
             self.monitor.should_run = False
             if self.monitor.ws:

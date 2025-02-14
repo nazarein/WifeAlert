@@ -1,3 +1,9 @@
+"""
+WifeAlert's main application file that brings everything together. Handles the core setup like
+Windows DPI scaling, dark mode theming, and system tray integration. Also manages the event loop
+for Twitch monitoring and makes sure everything runs smoothly.
+"""
+
 import sys
 import asyncio
 import qasync
@@ -13,6 +19,12 @@ import json
 
 
 def main():
+    """
+    Main application entry point that initializes all core components. Sets up SSL certificates
+    for Twitch API communication, configures Windows-specific display settings for proper scaling
+    and dark mode, and creates the main monitoring interface. Also handles the async event loop
+    that powers the real-time Twitch monitoring system.
+    """
     # Set up SSL certificate path for packaged app
     import certifi
     import os
@@ -104,6 +116,12 @@ def main():
     asyncio.set_event_loop(loop)
 
     def force_quit():
+        """
+        Handles graceful application shutdown by cleaning up all running processes.
+        Stops active monitoring, cancels pending tasks, closes open websocket
+        connections, and properly disposes of UI elements before exiting.
+        Prevents any orphaned processes or connections from persisting.
+        """
         try:
             # First stop the monitor to prevent new tasks
             monitor.should_run = False

@@ -1,3 +1,9 @@
+"""
+Configuration dialog for setting up automated chat messages when a streamer goes live.
+Features chat connection management, message timing controls, and dark theme styling.
+Messages can be configured to send with delays between lines.
+"""
+
 import json
 import os
 from PyQt6.QtWidgets import (
@@ -20,13 +26,23 @@ from ui.chat_login_dialog import ChatLoginDialog
 
 
 class EmoteConfigDialog(QDialog):
+    """
+    Dialog for configuring automated Twitch chat messages. Features:
+    - Chat connection testing
+    - Multi-line message input
+    - Message delay configuration
+    - Initial delay before first message
+    - Dark theme UI with custom styling
+    - Persistent settings storage
+    """
+
     def __init__(self, streamer_name, parent=None):
         super().__init__(parent)
         self.streamer_name = streamer_name
         self.setWindowTitle(f"Chat Message Setup - {streamer_name}")
         self.setFixedWidth(400)
 
-        # Force dark theme
+        # Dark theme configuration for dialog
         palette = self.palette()
         palette.setColor(QPalette.ColorRole.Window, QColor(30, 30, 30))
         self.setPalette(palette)
@@ -34,7 +50,7 @@ class EmoteConfigDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Apply dark theme stylesheet
+        # Dark theme styles for UI components
         self.setStyleSheet(
             """
             QWidget {
@@ -115,6 +131,13 @@ class EmoteConfigDialog(QDialog):
             pass
 
     def toggle_chat_connection(self):
+        """
+        Manages Twitch chat connection state. When connecting:
+        - Opens login dialog for credentials
+        - Tests connection with provided details
+        - Updates UI to reflect connection status
+        When disconnecting, closes connection and resets UI state.
+        """
         if self.connect_btn.text() == "Connect to Chat":
             dialog = ChatLoginDialog(self)
             if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -147,6 +170,11 @@ class EmoteConfigDialog(QDialog):
                 pass
 
     def accept(self):
+        """
+        Saves chat message configuration when dialog is accepted.
+        Stores message content, delays, and enabled state to JSON file.
+        Creates necessary directories if they don't exist.
+        """
         try:
             emote_settings_path = get_data_file("emote_settings.json")
             if not os.path.exists(emote_settings_path):

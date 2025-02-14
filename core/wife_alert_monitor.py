@@ -1,3 +1,8 @@
+"""
+Core monitoring system for WifeAlert that tracks Twitch streams and manages notifications.
+Handles stream state changes, chat interactions, and notification delivery through the system tray.
+"""
+
 import asyncio
 import json
 import os
@@ -12,6 +17,12 @@ from utils.paths import get_data_file, get_app_data_dir, get_asset_file
 
 
 class WifeAlertMonitor(TwitchMonitor):
+    """
+    Monitors Twitch streams and manages the notification system. Tracks live status,
+    handles chat messages and emotes, and coordinates with the UI to show notifications.
+    Maintains state of live channels and manages automated responses when streams go live.
+    """
+
     def __init__(self, client_id: str, usernames: list[str]):
         super().__init__(client_id, usernames)
         self.notification_manager = None
@@ -23,6 +34,16 @@ class WifeAlertMonitor(TwitchMonitor):
         self.suppress_actions = False
 
     async def _get_emote_settings(self, username: str):
+        """
+        Loads emote settings for a specific streamer from the saved configuration.
+        These settings control automated chat messages and emote usage when a stream goes live.
+
+        Args:
+            username: The streamer's Twitch username to load settings for
+
+        Returns:
+            dict: The streamer's emote settings if found, None otherwise
+        """
         try:
             emote_settings_path = get_data_file("emote_settings.json")
             if os.path.exists(emote_settings_path):
@@ -36,6 +57,15 @@ class WifeAlertMonitor(TwitchMonitor):
     async def handle_stream_up(
         self, channel_id: str, server_time: str, trigger_actions: bool = True
     ):
+        """
+        Responds when a stream goes live by showing notifications and triggering configured actions.
+        Can open the stream, send chat messages, and play notification sounds based on settings.
+
+        Args:
+            channel_id: The Twitch channel ID that went live
+            server_time: Timestamp when the stream started
+            trigger_actions: Whether to run notifications/actions (False during startup)
+        """
         try:
             username = next(
                 (
@@ -201,6 +231,13 @@ class WifeAlertMonitor(TwitchMonitor):
             pass
 
     async def remove_from_blacklist(self, channel_id: str):
+        """
+        Removes a channel from the emote blacklist after a delay. The blacklist prevents
+        duplicate emote messages from being sent when a stream status changes rapidly.
+
+        Args:
+            channel_id: The channel ID to remove from the blacklist
+        """
         await asyncio.sleep(20)
         self.emote_blacklist.discard(channel_id)
         username = next(
@@ -209,6 +246,13 @@ class WifeAlertMonitor(TwitchMonitor):
         )
 
     async def handle_stream_down(self, channel_id: str):
+        """
+        Handles stream offline events by updating the UI and internal state.
+        Removes the channel from the live channels list and updates indicators.
+
+        Args:
+            channel_id: The channel ID that went offline
+        """
         if channel_id in self.live_channels:
             self.live_channels.remove(channel_id)
             self.update_live_indicators()
@@ -218,10 +262,20 @@ class WifeAlertMonitor(TwitchMonitor):
     _rate_limit_semaphore = asyncio.Semaphore(2)
 
     async def check_stream_status(self, username: str):
+        """
+        Checks if a Twitch channel is currently live using an external API.
+        Rate limited to prevent excessive API calls.
+
+        Args:
+            username: The Twitch username to check
+
+        Returns:
+            bool: True if the channel is live, False otherwise
+        """
         async with self._rate_limit_semaphore:
             url = f"https://decapi.me/twitch/uptime/{username}"
             try:
-                # Create a ClientSession with SSL verification disabled (keep this fix)
+                # SSL verification bypass for packaged executable compatibility
                 async with aiohttp.ClientSession(
                     connector=aiohttp.TCPConnector(ssl=False)
                 ) as session:
@@ -233,6 +287,11 @@ class WifeAlertMonitor(TwitchMonitor):
                 return False
 
     async def initialize(self):
+        """
+        Sets up initial state by checking all monitored channels.
+        Shows a summary notification of currently live channels on startup.
+        Inherits base initialization from TwitchMonitor.
+        """
         await super().initialize()
         try:
             self.live_channels.clear()
@@ -269,6 +328,10 @@ class WifeAlertMonitor(TwitchMonitor):
             pass
 
     def update_live_indicators(self):
+        """
+        Updates the UI to reflect current live/offline status of all monitored channels.
+        Syncs the internal live channels state with the streamer list widgets.
+        """
         if not hasattr(self, "notification_manager") or not self.notification_manager:
             return
 

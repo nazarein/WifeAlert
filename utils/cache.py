@@ -1,3 +1,9 @@
+"""
+Profile image caching system for Twitch streamers. Handles downloading
+and local storage of profile images to reduce API requests and improve
+load times. Supports SSL verification bypass for packaged executables.
+"""
+
 import os
 import sys
 import aiohttp
@@ -5,12 +11,31 @@ from utils.paths import get_app_data_dir
 
 
 class ImageCache:
+    """
+    Manages local caching of Twitch profile images. Features:
+    - Automatic cache directory creation
+    - SSL-aware download handling
+    - File extension preservation
+    - Duplicate download prevention
+    """
+
     def __init__(self):
         self.cache_dir = os.path.join(get_app_data_dir(), "assets", "profile_cache")
         os.makedirs(self.cache_dir, exist_ok=True)
 
     async def download_image(self, url: str, username: str) -> str:
-        """Download image and return path to cached file"""
+        """
+        Downloads and caches a streamer's profile image.
+        Creates cache directory if needed and preserves file extension.
+        Handles SSL verification based on execution context.
+
+        Args:
+            url: Profile image URL to download
+            username: Streamer's username for filename
+
+        Returns:
+            str: Path to cached image file, or None on failure
+        """
         try:
             file_ext = os.path.splitext(url)[1] or ".jpg"
             cache_path = os.path.join(self.cache_dir, f"{username}{file_ext}")
