@@ -92,7 +92,7 @@ To use chat message features:
 - **Suppress Alert Sounds**: Temporarily disable all sound notifications
 - **Prevent Opening**: Temporarily disable auto-opening streams
 
-## Security
+## Security(use of chat feature is optional)
 
 WifeAlert takes security seriously:
 - Chat OAuth tokens are encrypted using industry-standard encryption
