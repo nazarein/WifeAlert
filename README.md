@@ -1,9 +1,10 @@
+
+(Twitch's Pubsub which this program relies on is being depreciate, I will look into a fix at a later date)
+
 # WifeAlert
 A customizable Twitch notification tool.
 
 <img src="assets/screenshot.png" alt="WifeAlert Logo" width="200"/>
-
-
 
 
 ## Features
