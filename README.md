@@ -1,5 +1,5 @@
 
-(This program relies on Twitch's Pubsub which is being depreciate, I will look into a fix at a later date)
+(This program relies on Twitch's Pubsub which is being deprecated, I will look into a fix at a later date)
 
 # WifeAlert
 A customizable Twitch notification tool.
