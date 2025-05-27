@@ -59,7 +59,7 @@ def main():
 
     app = QApplication(sys.argv)
 
-    # Add these lines to force dark mode
+    
     if os.name == "nt":
         try:
             from ctypes import windll, byref, sizeof, c_int
