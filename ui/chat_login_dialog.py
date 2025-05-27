@@ -176,7 +176,7 @@ class ChatLoginDialog(QDialog):
                 handle_encryption_save_error(self)
                 return
 
-            # Add this line to properly close the dialog
+
             super().accept()
 
         except Exception:
