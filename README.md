@@ -1,6 +1,3 @@
-
-(This program relies on Twitch's Pubsub which is being deprecated, I will implement a fix once pubsub is no longer working)
-
 # WifeAlert
 A customizable Twitch notification tool.
 
