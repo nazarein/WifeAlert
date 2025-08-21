@@ -1,3 +1,5 @@
+Twitch finally shutdown PubSub, I will work on implementing EventSub.
+
 # WifeAlert
 A customizable Twitch notification tool.
 
